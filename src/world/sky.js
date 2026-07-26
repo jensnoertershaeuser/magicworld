@@ -6,9 +6,9 @@ export function addSky(scene) {
   const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     uniforms: {
-      top: { value: new THREE.Color(0x241b4a) },
-      mid: { value: new THREE.Color(0x5a3a7e) },
-      bottom: { value: new THREE.Color(0xffb98a) },
+      top: { value: new THREE.Color(0x2a6fd6) },
+      mid: { value: new THREE.Color(0x6fb4f0) },
+      bottom: { value: new THREE.Color(0xcfeaff) },
     },
     vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
     fragmentShader: `
@@ -31,7 +31,8 @@ export function addSky(scene) {
   }
   const sg = new THREE.BufferGeometry();
   sg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.6 }));
+  const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.0 }));
+  stars.visible = false; // day starts starless; dayNight.js fades them in at night
   scene.add(stars);
 
   return { skyMat, stars };

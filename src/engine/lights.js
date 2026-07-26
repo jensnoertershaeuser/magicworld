@@ -10,10 +10,13 @@ import * as THREE from 'three';
 // EMISSIVE material instead of its own light. Emissive is basically free.
 
 export function addLights(scene) {
-  const hemi = new THREE.HemisphereLight(0xbfa8ff, 0x2a4d3a, 0.9);
+  // Starting values match the DAY palette in world/dayNight.js so the world
+  // doesn't flash purple on the first frames. dayNight.js lerps both lights
+  // (colour + intensity) from here on.
+  const hemi = new THREE.HemisphereLight(0x9ec9ff, 0x4e8a5c, 1.1);
   scene.add(hemi);
 
-  const sun = new THREE.DirectionalLight(0xfff0d0, 2.4);
+  const sun = new THREE.DirectionalLight(0xfff6e2, 3.2);
   sun.position.set(30, 45, 20);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);

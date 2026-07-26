@@ -52,8 +52,12 @@ zauberwelt/
 │   │   ├── sky.js          gradient sky + stars
 │   │   ├── ground.js       hilly terrain + shared heightAt() helper
 │   │   └── instancedForest.js   hundreds of trees in 2 draw calls
-│   └── entities/           the "things" that live in the world
-│       └── character.js    a walking figure that animates itself
+│   ├── entities/           the "things" that live in the world
+│   │   └── character.js    a walking figure that animates itself
+│   └── ui/                 everything on top of the canvas
+│       ├── controls.js     the button bar
+│       ├── device.js       "is this a phone?" (?mobile=1 forces it on)
+│       └── mobile.js       phone layout: rotate gate, ☰ menu, touch pads
 └── legacy/zauberwelt.html  the old all-in-one prototype (for porting features)
 ```
 
@@ -226,6 +230,15 @@ the others. Current modules:
 | `audio/music.js` | melody + sung voice; `onBeat()` for visuals |
 | `fx/floatingNotes.js` | rising ♪ used by piano + unicorn |
 | `ui/labels.js`, `ui/controls.js` | name/sign labels + the button bar |
+| `ui/mobile.js` | phone-only: "turn your phone" gate, ☰ menu, W A S D touch pads |
+
+### Phone mode
+
+On phones (coarse pointer + short side under 600px) the world asks for
+landscape first, hides the button bar behind a ☰ toggle, and overlays
+translucent W A S D + up/down buttons that press the same keys the keyboard
+does. Everything else — desktop and tablet — is untouched. Append `?mobile=1`
+to the URL to preview the phone layout on a desktop browser.
 
 ### Performance changes made during the port
 

@@ -27,6 +27,7 @@ import { addMagicHouse } from './entities/magicHouse.js';
 import { initNotes } from './fx/floatingNotes.js';
 import { autoStartOnGesture, toggleMusic } from './audio/music.js';
 import { initControls } from './ui/controls.js';
+import { initMobile } from './ui/mobile.js';
 
 // --- engine ---
 const renderer = createRenderer();
@@ -67,6 +68,7 @@ initControls({
   onJump: pool.triggerJump,
   onDoor: magicHouse.toggleDoor,
 });
+initMobile({ camControls: controls });   // no-op on desktop / tablet
 autoStartOnGesture();
 
 // camera update every frame

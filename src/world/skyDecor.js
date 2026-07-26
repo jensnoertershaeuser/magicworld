@@ -17,8 +17,8 @@ function glowSprite(rgb, scale) {
 export function addSkyDecor(scene) {
   // Sun (day only)
   const sun = new THREE.Group();
-  sun.add(new THREE.Mesh(new THREE.SphereGeometry(7, 28, 22), new THREE.MeshBasicMaterial({ color: 0xffe27a, fog: false })));
-  const sunHalo = glowSprite('255,220,120', 60); sun.add(sunHalo);
+  sun.add(new THREE.Mesh(new THREE.SphereGeometry(7, 28, 22), new THREE.MeshBasicMaterial({ color: 0xfff8d8, fog: false })));
+  const sunHalo = glowSprite('255,244,200', 66); sun.add(sunHalo);
   sun.position.copy(new THREE.Vector3(0.45, 0.5, -0.55).normalize().multiplyScalar(190));
   scene.add(sun);
 
@@ -75,11 +75,14 @@ export function addSkyDecor(scene) {
 
   onUpdate((dt, t) => {
     sun.visible = !state.night;
-    sunHalo.material.opacity = 0.7 + Math.sin(t * 1.5) * 0.12;
-    moonLight.intensity = state.night ? 0.55 : 0.18;
-    moonHalo.material.opacity = (state.night ? 0.95 : 0.55) + Math.sin(t * 1.2) * 0.08;
+    sunHalo.material.opacity = 0.8 + Math.sin(t * 1.5) * 0.1;
+    // By day the moon stays as a pale disc but stops lighting/glowing, and the
+    // auroras switch off completely — both only read as magic against a dark sky.
+    moonLight.intensity = state.night ? 0.55 : 0.04;
+    moonHalo.material.opacity = state.night ? 0.95 + Math.sin(t * 1.2) * 0.08 : 0.12;
     auroras.forEach((a, i) => {
-      a.mesh.material.opacity = (state.night ? 0.55 : 0.16) + Math.sin(t * 0.6 + i) * 0.12;
+      a.mesh.material.opacity = state.night ? 0.55 + Math.sin(t * 0.6 + i) * 0.12 : 0;
+      a.mesh.visible = state.night;
       a.mesh.position.x = a.baseX + Math.sin(t * 0.15 + i) * 6;
     });
     balloons.forEach((b) => {

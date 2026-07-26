@@ -69,6 +69,9 @@ export function createControls(camera, dom, state = null) {
   const keys = {};
   window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
   window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+  // On-screen touch buttons (ui/mobile.js) press the very same keys.
+  function setKey(name, down) { keys[name] = down; }
+  function releaseAllKeys() { for (const k in keys) keys[k] = false; }
 
   function rotate(dx, dy) {
     orbit.theta -= dx * 0.005;
@@ -105,7 +108,7 @@ export function createControls(camera, dom, state = null) {
     apply();
   }
 
-  return { update, orbit, setFollowTarget };
+  return { update, orbit, setFollowTarget, setKey, releaseAllKeys };
 }
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
