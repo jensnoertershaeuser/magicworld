@@ -42,7 +42,8 @@ export function addGnome(scene) {
 
   // Forgotten sun cream
   const bottle = new THREE.Group();
-  bottle.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.4, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 })), { position: new THREE.Vector3(0, 0.2, 0) }));
+  const bottleBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.4, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }));
+  bottleBody.position.set(0, 0.2, 0); bottle.add(bottleBody);
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.12, 12), new THREE.MeshStandardMaterial({ color: 0xff5aa0, roughness: 0.5 })); cap.position.y = 0.46; bottle.add(cap);
   bottle.position.set(1.05, 0, -0.5); spot.add(bottle);
 

@@ -110,7 +110,8 @@ export function addMachines(scene) {
     const rotors = [];
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * Math.PI * 2;
-      g.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.06), new THREE.MeshStandardMaterial({ color: 0xb8c0cc })), { position: new THREE.Vector3(Math.cos(a) * 0.55, 0.1, Math.sin(a) * 0.55) }));
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.06), new THREE.MeshStandardMaterial({ color: 0xb8c0cc }));
+      arm.position.set(Math.cos(a) * 0.55, 0.1, Math.sin(a) * 0.55); g.add(arm);
       const rot = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, 0.1), new THREE.MeshStandardMaterial({ color: 0x6ee7ff, transparent: true, opacity: 0.7 }));
       rot.position.set(Math.cos(a) * 0.55, 0.15, Math.sin(a) * 0.55); g.add(rot); rotors.push(rot);
     }
