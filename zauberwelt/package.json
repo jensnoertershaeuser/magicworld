@@ -1,0 +1,18 @@
+{
+  "name": "zauberwelt",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Balthasars Zauberwelt - an interactive 3D world we build together",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "0.169.0"
+  },
+  "devDependencies": {
+    "vite": "5.4.10"
+  }
+}

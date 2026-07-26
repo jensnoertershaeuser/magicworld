@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Balthasars Zauberwelt</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #191233; font-family: 'Trebuchet MS', sans-serif; }
+    #app { position: fixed; inset: 0; }
+    #app canvas { display: block; }
+    #hint {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+      color: #fff; text-align: center; pointer-events: none;
+      text-shadow: 0 2px 8px rgba(0,0,0,.6); z-index: 5;
+    }
+    #hint h1 {
+      font-size: clamp(18px, 4vw, 28px); letter-spacing: 1px;
+      background: linear-gradient(90deg, #ffe066, #5ff0d0, #b06bff);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    #hint p { font-size: 12px; opacity: .8; margin-top: 2px; color: #dfe; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="hint">
+    <h1>✨ Balthasars Zauberwelt ✨</h1>
+    <p>Ziehen = drehen · Scrollen = zoomen · W A S D = bewegen</p>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
