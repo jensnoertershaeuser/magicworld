@@ -2,10 +2,12 @@ import * as THREE from 'three';
 import { heightAt } from '../world/ground.js';
 import { makeLabel } from '../ui/labels.js';
 import { onUpdate } from '../engine/loop.js';
+import { reserve } from '../world/occupancy.js';
 
 // Returns { toggleDoor } so the UI button can open/close the door.
 export function addMagicHouse(scene) {
   const hx = 10, hz = 36, yaw = Math.atan2(-hx, -hz);
+  reserve(hx, hz, 7);            // 6x6 house + a clear doorstep
   const g = new THREE.Group(); g.position.set(hx, heightAt(hx, hz), hz); g.rotation.y = yaw; scene.add(g);
 
   const W = 6, D = 6, H = 4;

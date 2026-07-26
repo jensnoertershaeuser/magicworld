@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import { heightAt } from '../world/ground.js';
 import { makeLabel } from '../ui/labels.js';
 import { onUpdate } from '../engine/loop.js';
+import { reserve } from '../world/occupancy.js';
 
 export function addFlag(scene) {
   const px = 9, pz = -7;
+  reserve(px, pz, 3.5);          // pole + room to see the cloth
   const g = new THREE.Group();
   g.position.set(px, heightAt(px, pz), pz); scene.add(g);
 

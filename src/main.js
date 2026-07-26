@@ -40,7 +40,6 @@ const { hemi, sun } = addLights(scene);
 const { skyMat, stars } = addSky(scene);
 initDayNight({ skyMat, stars, hemi, sun, scene });
 addGround(scene);
-addForest(scene, 400);
 addScenery(scene);
 addMountains(scene);
 addSkyDecor(scene);
@@ -57,6 +56,12 @@ const balthasar = addTechHouse(scene);   // camera can follow him
 const pool = addPool(scene, camera, renderer.domElement);
 addGnome(scene);
 const magicHouse = addMagicHouse(scene);
+
+// --- forest LAST ---
+// Every module above reserves the ground it occupies (world/occupancy.js), and
+// the forest fills whatever is left over. Move this line back up and trees will
+// start growing through the houses again.
+addForest(scene, 400);
 
 // follow target for the camera
 controls.setFollowTarget(balthasar);

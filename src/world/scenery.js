@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { heightAt } from './ground.js';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
+import { reserve } from './occupancy.js';
 
 const COLORS = [0xff6ec7, 0x6ee7ff, 0xffe066, 0xb06bff, 0x5ff0d0, 0xff9e2c];
 
@@ -26,6 +27,7 @@ export function addScenery(scene) {
     cap.position.y = 1.0; g.add(cap);
     g.scale.setScalar(scale); g.position.set(x, heightAt(x, z), z);
     g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    reserve(x, z, 0.6 * scale + 1.2);   // cap width; the big ones need real room
     scene.add(g);
   }
   [[-18, 10, 1.1, 0xff6ec7], [-22, 16, 0.8, 0x6ee7ff], [16, -20, 1.3, 0xffe066], [24, 8, 0.9, 0xb06bff], [-10, -24, 1.0, 0x5ff0d0], [30, -6, 0.85, 0xff9e7d]]
@@ -42,7 +44,11 @@ export function addScenery(scene) {
       leaf.position.set((Math.random() - 0.5) * 2, 7 + i * 1.6, (Math.random() - 0.5) * 2); g.add(leaf);
     }
     g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-    g.position.set(-26, heightAt(-26, -16), -16); scene.add(g);
+    // Was at (-26,-16), where its trunk grew through the pool's back wall.
+    // Moved clear of the pool (which sits at -24,-12 and is 8x6).
+    const tx = -32, tz = -22;
+    g.position.set(tx, heightAt(tx, tz), tz); scene.add(g);
+    reserve(tx, tz, 6);          // the magic tree is 3.4 wide and should stand alone
   })();
 
   // Colourful mid-ground: big crystals + big mushrooms (between play area and mountains)

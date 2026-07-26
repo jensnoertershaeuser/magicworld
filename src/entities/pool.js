@@ -3,11 +3,13 @@ import { heightAt } from '../world/ground.js';
 import { makeLabel } from '../ui/labels.js';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
+import { reserve } from '../world/occupancy.js';
 
 const V = new THREE.Vector3();
 
 export function addPool(scene, camera, dom) {
   const px = -24, pz = -12, baseY = heightAt(px, pz);
+  reserve(px, pz, 8);            // 8x6 basin + diving board + ladder
   const g = new THREE.Group(); g.position.set(px, baseY, pz); scene.add(g);
 
   const W = 8, Dp = 6, wallH = 1.4, th = 0.3;

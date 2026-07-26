@@ -3,9 +3,11 @@ import { heightAt } from '../world/ground.js';
 import { makeLabel } from '../ui/labels.js';
 import { onBeat } from '../audio/music.js';
 import { spawnNote } from '../fx/floatingNotes.js';
+import { reserve } from '../world/occupancy.js';
 
 export function addPiano(scene) {
   const px = -14, pz = 20;
+  reserve(px, pz, 4);            // keep the forest off the piano
   const g = new THREE.Group();
   g.position.set(px, heightAt(px, pz), pz); g.rotation.y = -0.5; scene.add(g);
 

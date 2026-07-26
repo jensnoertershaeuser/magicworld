@@ -3,6 +3,7 @@ import { heightAt } from '../world/ground.js';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
 import { makeLabel } from '../ui/labels.js';
+import { reserve } from '../world/occupancy.js';
 
 // Builds a character from primitives WITHOUT adding it to the scene or moving
 // it. Returns handles (limbs + dimensions) so callers can walk it, seat it,
@@ -66,6 +67,10 @@ export function addWalker(scene, opts) {
   const c = buildCharacter(opts);
   scene.add(c.group);
   const cx = opts.cx ?? 0, cz = opts.cz ?? 0, radius = opts.radius ?? 14, speed = opts.speed ?? 2.6;
+  // Clear the whole disc the walker circles in, not just where it stands —
+  // otherwise it walks straight through tree trunks. Any future walker gets
+  // this for free.
+  reserve(cx, cz, radius + 1.5);
   let angle = Math.random() * Math.PI * 2;
   onUpdate((dt, t) => {
     if (state.paused) return;
