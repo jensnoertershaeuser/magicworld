@@ -5,10 +5,12 @@ import { state } from '../state.js';
 import { makeLabel } from '../ui/labels.js';
 import { buildCharacter, poseSeated } from './character.js';
 import { makeRobot } from './machines.js';
+import { reserve } from '../world/occupancy.js';
 
 // Returns the Balthasar group so main.js can use it as the camera-follow target.
 export function addTechHouse(scene) {
   const hx = 28, hz = 26, yaw = Math.atan2(-hx, -hz), baseY = heightAt(hx, hz);
+  reserve(hx, hz, 9);            // 9x7 house + the yard Balthasar works in
   const g = new THREE.Group(); g.position.set(hx, baseY, hz); g.rotation.y = yaw; scene.add(g);
 
   const W = 9, D = 7, H = 4.2, t = 0.3;

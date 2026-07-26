@@ -51,6 +51,7 @@ zauberwelt/
 │   ├── world/              the environment
 │   │   ├── sky.js          gradient sky + stars
 │   │   ├── ground.js       hilly terrain + shared heightAt() helper
+│   │   ├── occupancy.js    keep-out zones so nothing spawns inside anything
 │   │   └── instancedForest.js   hundreds of trees in 2 draw calls
 │   ├── entities/           the "things" that live in the world
 │   │   └── character.js    a walking figure that animates itself
@@ -63,8 +64,27 @@ zauberwelt/
 
 **The golden rule that keeps it scalable:** a new thing (creature, machine,
 building, effect) is its own file in `entities/` or `world/`. It builds itself,
-adds itself to the scene, and registers its own animation with `onUpdate(...)`.
-You almost never edit `main.js` except to add one `import` + one line.
+adds itself to the scene, registers its own animation with `onUpdate(...)`, and
+declares the ground it occupies with `reserve(...)`. You almost never edit
+`main.js` except to add one `import` + one line.
+
+### Keeping the forest out of things
+
+`world/occupancy.js` holds the keep-out zones. Anything standing on the ground
+claims its patch while it builds itself:
+
+```js
+import { reserve } from '../world/occupancy.js';
+reserve(x, z, 6);   // nothing will be scattered within 6 units of (x, z)
+```
+
+The forest asks before planting each tree, so a new entity is fenced off
+automatically — no edit to the forest. Reserve the space a thing *uses*, not
+just the space it fills: a character that walks a circle of radius 14 reserves
+all 14, or it walks through trunks.
+
+This is why `main.js` builds the forest **last**: zones must exist before
+anything is scattered.
 
 ### Adding a new thing (the pattern)
 

@@ -3,6 +3,7 @@ import { heightAt } from '../world/ground.js';
 import { makeLabel } from '../ui/labels.js';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
+import { reserve } from '../world/occupancy.js';
 
 const cSkin = new THREE.Color(0xffd8b0), cBurn = new THREE.Color(0xff2e1a);
 
@@ -10,6 +11,7 @@ const cSkin = new THREE.Color(0xffd8b0), cBurn = new THREE.Color(0xff2e1a);
 // and turns bright red - then recovers, on a loop.
 export function addGnome(scene) {
   const lx = -30, lz = -10, baseY = heightAt(lx, lz);
+  reserve(lx, lz, 4);            // his sunbathing spot stays sunny
   const spot = new THREE.Group(); spot.position.set(lx, baseY, lz); spot.rotation.y = 0.7; scene.add(spot);
 
   // Lounger

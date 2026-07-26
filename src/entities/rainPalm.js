@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import { heightAt } from '../world/ground.js';
 import { makeLabel } from '../ui/labels.js';
 import { onUpdate } from '../engine/loop.js';
+import { reserve } from '../world/occupancy.js';
 
 export function addRainPalm(scene) {
   const px = 20, pz = -18;
+  reserve(px, pz, 6);            // palm + the puddle the rain falls into
   const g = new THREE.Group();
   g.position.set(px, heightAt(px, pz), pz); scene.add(g);
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
+import { reserve } from './occupancy.js';
 
 export function addMountains(scene) {
   // Plain snowy mountains
@@ -12,6 +13,9 @@ export function addMountains(scene) {
     const x = Math.cos(a) * d, z = Math.sin(a) * d, h = 12 + Math.random() * 14, r = 6 + Math.random() * 6;
     const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 5 + ((Math.random() * 3) | 0), 1), rockMat);
     m.position.set(x, h / 2 - 1, z); m.rotation.y = Math.random() * Math.PI; scene.add(m);
+    // Trees planted inside a mountain are invisible anyway — keep them at the
+    // foot of the slope instead. (0.8 of the base, so they can still hug it.)
+    reserve(x, z, r * 0.8);
     const cap = new THREE.Mesh(new THREE.ConeGeometry(r * 0.42, h * 0.28, 5, 1), snowMat);
     cap.position.set(x, h - h * 0.14 - 1, z); cap.rotation.y = m.rotation.y; scene.add(cap);
   }
@@ -33,6 +37,7 @@ export function addMountains(scene) {
       cr.position.set(Math.cos(ca) * taper, cy, Math.sin(ca) * taper); cr.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
       g.add(cr); crystals.push(cm);
     }
+    reserve(x, z, r * 0.8);
     scene.add(g); glow.push({ rockMat: rockM, crystals, pulse: Math.random() * 6.28 });
   });
 

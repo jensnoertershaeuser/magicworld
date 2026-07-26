@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { heightAt } from '../world/ground.js';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
+import { reserve } from '../world/occupancy.js';
 
 const V0 = new THREE.Vector3();
 
@@ -36,6 +37,11 @@ function ring(cx, cz, r, n, phase) {
 }
 
 export function addMachines(scene) {
+  // The central meadow: reactor in the middle, robot patrolling a ring of 20
+  // around it. One disc covers both, and it is what keeps the whole middle of
+  // the world clear of forest.
+  reserve(0, 0, 22);
+
   // Central magic reactor with rotating rings + glowing core
   const reactor = new THREE.Group();
   reactor.position.set(0, heightAt(0, 0), 0);
@@ -66,6 +72,7 @@ export function addMachines(scene) {
     }
     g.position.set(x, heightAt(x, z) + r + 0.6, z);
     g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    reserve(x, z, r + 1.4);      // gear body + its teeth
     scene.add(g); return g;
   }
   const gearA = gear(22, 18, 2.2, 12, 0xd08b4f);
@@ -79,6 +86,7 @@ export function addMachines(scene) {
   // Turbine
   const turbine = new THREE.Group();
   const tx = -30, tz = 14;
+  reserve(tx, tz, 4.5);          // mast + blade sweep
   const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.7, 9, 12), new THREE.MeshStandardMaterial({ color: 0xe8e0d0, metalness: 0.4, roughness: 0.5 }));
   tower.position.y = 4.5; turbine.add(tower);
   const hub = new THREE.Group(); hub.position.y = 9;

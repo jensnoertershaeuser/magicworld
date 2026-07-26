@@ -5,11 +5,15 @@ import { state } from '../state.js';
 import { makeLabel } from '../ui/labels.js';
 import { onBeat } from '../audio/music.js';
 import { spawnNote } from '../fx/floatingNotes.js';
+import { reserve } from '../world/occupancy.js';
 
 const V0 = new THREE.Vector3();
 
 export function addRainbowUnicorn(scene) {
   const RB = { x: -6, z: -30 };
+  // The unicorn gallops a circle of radius 13 under a 10-wide rainbow arch,
+  // so the whole clearing has to stay open.
+  reserve(RB.x, RB.z, 15);
 
   // Rainbow arch + clouds
   const g = new THREE.Group();
