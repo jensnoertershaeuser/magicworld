@@ -19,17 +19,22 @@ export function createControls(camera, dom, state = null) {
     phi: Math.PI * 0.38,
     radius: 40,
     minR: 8, maxR: 120,
-    minPhi: 0.15, maxPhi: Math.PI * 0.49,
+    // phi is the angle between "straight up" and the camera-to-pivot arm:
+    // small = you look down at the pivot, PI/2 = level, larger = you look up.
+    minPhi: 0.15, maxPhi: Math.PI * 0.75,
   };
 
+  // The camera always sits `radius` away from `target` in the direction given
+  // by phi/theta. Both apply() and the free-look turning below use this arm.
+  const _arm = new THREE.Vector3();
+  function arm() {
+    const { phi: p, theta: t, radius: r } = orbit;
+    return _arm.set(r * Math.sin(p) * Math.sin(t), r * Math.cos(p), r * Math.sin(p) * Math.cos(t));
+  }
+
   function apply() {
-    const { phi: p, theta: t, radius: r, target } = orbit;
-    camera.position.set(
-      target.x + r * Math.sin(p) * Math.sin(t),
-      target.y + r * Math.cos(p),
-      target.z + r * Math.sin(p) * Math.cos(t),
-    );
-    camera.lookAt(target);
+    camera.position.copy(orbit.target).add(arm());
+    camera.lookAt(orbit.target);
   }
   apply();
 
@@ -73,9 +78,21 @@ export function createControls(camera, dom, state = null) {
   function setKey(name, down) { keys[name] = down; }
   function releaseAllKeys() { for (const k in keys) keys[k] = false; }
 
+  // FREE-LOOK TURNING
+  // The naive version just changes phi/theta, which swings the camera around
+  // the pivot like a satellite — you turn and find yourself somewhere else.
+  // Instead we keep the camera exactly where it is and move the pivot to the
+  // new viewing direction, so turning happens on the spot, like a person
+  // looking around. Everything downstream (zoom, WASD, follow) still works,
+  // because they all go through the same target + arm.
+  function setAngles(theta, phi) {
+    orbit.theta = theta;
+    orbit.phi = clamp(phi, orbit.minPhi, orbit.maxPhi);
+    orbit.target.copy(camera.position).sub(arm());
+  }
+
   function rotate(dx, dy) {
-    orbit.theta -= dx * 0.005;
-    orbit.phi = clamp(orbit.phi - dy * 0.005, orbit.minPhi, orbit.maxPhi);
+    setAngles(orbit.theta - dx * 0.005, orbit.phi - dy * 0.005);
   }
   function pan(dx, dy) {
     const speed = orbit.radius * 0.0015;
@@ -89,8 +106,15 @@ export function createControls(camera, dom, state = null) {
   function setFollowTarget(obj) { followTarget = obj; }
 
   function update(dt) {
-    if (state && state.autoSpin) orbit.theta += dt * 0.12;
+    // Auto-spin turns on the spot too, so it reads as a slow panorama instead
+    // of the camera flying in a circle around the world.
+    if (state && state.autoSpin) setAngles(orbit.theta + dt * 0.12, orbit.phi);
     if (state && state.follow && followTarget) {
+      // Following pins the pivot to Balthasar, so turning orbits him instead.
+      // If you were looking up, drop straight back to an over-the-shoulder
+      // angle. Easing into it would drag the camera through the terrain, and
+      // the jump is invisible anyway next to the leap onto Balthasar.
+      orbit.phi = Math.min(orbit.phi, Math.PI * 0.45);
       orbit.target.lerp(followTarget.position, Math.min(1, dt * 2));
     }
     const speed = 20 * dt;
