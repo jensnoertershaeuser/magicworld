@@ -11,7 +11,8 @@ export function createCamera() {
 
 // A small self-contained orbit camera with WASD panning, ported from the
 // prototype. No external dependency, so it can't break on a Three.js update.
-export function createControls(camera, dom) {
+// `state` (optional) drives autoSpin and follow.
+export function createControls(camera, dom, state = null) {
   const orbit = {
     target: new THREE.Vector3(0, 2, 0),
     theta: Math.PI * 0.25,
@@ -33,8 +34,9 @@ export function createControls(camera, dom) {
   apply();
 
   let dragging = false, panning = false, lastX = 0, lastY = 0, pinch = 0;
+  const stopSpin = () => { if (state) state.autoSpin = false; };
   dom.addEventListener('contextmenu', (e) => e.preventDefault());
-  dom.addEventListener('mousedown', (e) => { dragging = true; panning = e.button === 2; lastX = e.clientX; lastY = e.clientY; });
+  dom.addEventListener('mousedown', (e) => { dragging = true; panning = e.button === 2; lastX = e.clientX; lastY = e.clientY; stopSpin(); });
   window.addEventListener('mouseup', () => { dragging = false; panning = false; });
   window.addEventListener('mousemove', (e) => {
     if (!dragging) return;
@@ -48,7 +50,7 @@ export function createControls(camera, dom) {
   }, { passive: false });
 
   dom.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) { lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; dragging = true; }
+    if (e.touches.length === 1) { lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; dragging = true; stopSpin(); }
     else if (e.touches.length === 2) { dragging = false; pinch = touchDist(e); }
   }, { passive: false });
   dom.addEventListener('touchmove', (e) => {
@@ -80,7 +82,14 @@ export function createControls(camera, dom) {
     orbit.target.addScaledVector(fwd, -dy * speed);
   }
 
+  let followTarget = null;
+  function setFollowTarget(obj) { followTarget = obj; }
+
   function update(dt) {
+    if (state && state.autoSpin) orbit.theta += dt * 0.12;
+    if (state && state.follow && followTarget) {
+      orbit.target.lerp(followTarget.position, Math.min(1, dt * 2));
+    }
     const speed = 20 * dt;
     const fwd = new THREE.Vector3().subVectors(orbit.target, camera.position).setY(0);
     if (fwd.lengthSq() > 1e-4) {
@@ -96,7 +105,7 @@ export function createControls(camera, dom) {
     apply();
   }
 
-  return { update, orbit };
+  return { update, orbit, setFollowTarget };
 }
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }

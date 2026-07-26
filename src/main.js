@@ -4,30 +4,72 @@ import { createCamera, createControls } from './engine/cameraControls.js';
 import { addLights } from './engine/lights.js';
 import { onUpdate, startLoop } from './engine/loop.js';
 
+import { state } from './state.js';
 import { addSky } from './world/sky.js';
+import { initDayNight } from './world/dayNight.js';
 import { addGround } from './world/ground.js';
 import { addForest } from './world/instancedForest.js';
+import { addScenery } from './world/scenery.js';
+import { addMountains } from './world/mountains.js';
+import { addSkyDecor } from './world/skyDecor.js';
 
-import { addCharacter } from './entities/character.js';
+import { addFamily } from './entities/family.js';
+import { addMachines } from './entities/machines.js';
+import { addRainbowUnicorn } from './entities/rainbowUnicorn.js';
+import { addPiano } from './entities/piano.js';
+import { addFlag } from './entities/flag.js';
+import { addRainPalm } from './entities/rainPalm.js';
+import { addTechHouse } from './entities/techHouse.js';
+import { addPool } from './entities/pool.js';
+import { addGnome } from './entities/gnome.js';
+import { addMagicHouse } from './entities/magicHouse.js';
 
-// --- boot the engine ---
+import { initNotes } from './fx/floatingNotes.js';
+import { autoStartOnGesture, toggleMusic } from './audio/music.js';
+import { initControls } from './ui/controls.js';
+
+// --- engine ---
 const renderer = createRenderer();
 const scene = createScene();
 const camera = createCamera();
-const controls = createControls(camera, renderer.domElement);
-addLights(scene);
+const controls = createControls(camera, renderer.domElement, state);
+const { hemi, sun } = addLights(scene);
 
-// --- build the world ---
-addSky(scene);
+// --- environment ---
+const { skyMat, stars } = addSky(scene);
+initDayNight({ skyMat, stars, hemi, sun, scene });
 addGround(scene);
-addForest(scene, 400); // 400 trees, 2 draw calls
+addForest(scene, 400);
+addScenery(scene);
+addMountains(scene);
+addSkyDecor(scene);
+initNotes(scene);
 
-// --- add the family (each self-animates) ---
-addCharacter(scene, { name: 'Papa', height: 1.80, hair: 0xe8c56a, shirt: 0x3b6ea5, radius: 14, speed: 2.6 });
-addCharacter(scene, { name: 'Mama', height: 1.56, hair: 0x6b4423, shirt: 0xe0607e, radius: 10, speed: 2.4 });
-addCharacter(scene, { name: 'Balthasar', height: 1.07, hair: 0xe8c56a, shirt: 0x2fae6a, radius: 6, speed: 2.9 });
+// --- inhabitants & structures ---
+addFamily(scene);
+addMachines(scene);
+addRainbowUnicorn(scene);
+addPiano(scene);
+addFlag(scene);
+addRainPalm(scene);
+const balthasar = addTechHouse(scene);   // camera can follow him
+const pool = addPool(scene, camera, renderer.domElement);
+addGnome(scene);
+const magicHouse = addMagicHouse(scene);
 
-// camera responds to WASD every frame
+// follow target for the camera
+controls.setFollowTarget(balthasar);
+
+// --- UI + audio ---
+initControls({
+  camControls: controls,
+  onMusic: toggleMusic,
+  onJump: pool.triggerJump,
+  onDoor: magicHouse.toggleDoor,
+});
+autoStartOnGesture();
+
+// camera update every frame
 onUpdate((dt) => controls.update(dt));
 
 startLoop(renderer, scene, camera);

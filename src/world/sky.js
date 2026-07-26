@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
+// Returns { skyMat, stars } so the day/night system can recolour them.
 export function addSky(scene) {
   const geo = new THREE.SphereGeometry(300, 32, 16);
-  const mat = new THREE.ShaderMaterial({
+  const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     uniforms: {
       top: { value: new THREE.Color(0x241b4a) },
@@ -18,10 +19,8 @@ export function addSky(scene) {
         gl_FragColor = vec4(c, 1.0);
       }`,
   });
-  const sky = new THREE.Mesh(geo, mat);
-  scene.add(sky);
+  scene.add(new THREE.Mesh(geo, skyMat));
 
-  // Stars
   const pos = [];
   for (let i = 0; i < 800; i++) {
     const r = 260, u = Math.random(), v = Math.random();
@@ -32,7 +31,8 @@ export function addSky(scene) {
   }
   const sg = new THREE.BufferGeometry();
   sg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.85 })));
+  const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.0, transparent: true, opacity: 0.6 }));
+  scene.add(stars);
 
-  return sky;
+  return { skyMat, stars };
 }

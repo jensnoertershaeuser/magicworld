@@ -196,20 +196,47 @@ it in GitHub Desktop.
 
 ---
 
-## 7. Where we are / roadmap
+## 7. Where we are
 
-**Done in this starter:** modular engine, hi-dpi + ACES rendering, 2-light
-setup, gradient sky + stars, hilly ground, 400 instanced trees, and a family of
-self-animating characters. Proves the architecture and the performance approach.
+The **entire prototype has now been ported** into the modular structure. Every
+file is small and self-contained, so each thing can be changed without touching
+the others. Current modules:
 
-**To port from the prototype** (`legacy/zauberwelt.html`) as future sessions:
-grandparents, the tech house with the seated tinkerers and the 1-minute
-finished-robot event, the pool with the diving jumper, the rain palm, the
-waving flag, the glow mountains, sun & moon, aurora, hot-air balloons, the
-magic house with the button-controlled door, the Oberwichtel sunburn loop, and
-the piano with the unicorn singing along.
+| File | What it is |
+|---|---|
+| `engine/*` | renderer, scene, camera, lights, loop |
+| `state.js` | shared flags (paused, night, labels, follow, autoSpin) |
+| `world/sky.js`, `world/dayNight.js` | sky gradient + stars + smooth day/night |
+| `world/ground.js` | hilly terrain + shared `heightAt()` |
+| `world/instancedForest.js` | 400 trees in 2 draw calls |
+| `world/scenery.js` | magic tree, glowing mushrooms, floating crystals |
+| `world/mountains.js` | snowy mountains + night-reactive glow mountains |
+| `world/skyDecor.js` | sun, moon (+ moonlight), aurora, hot-air balloons |
+| `entities/character.js` | base figure: build / walk / seat |
+| `entities/family.js` | Papa, Mama, Oma walking |
+| `entities/machines.js` | reactor, gears, patrol robot, turbine, island, drones |
+| `entities/rainbowUnicorn.js` | rainbow + galloping unicorn that sings along |
+| `entities/piano.js` | grand piano, notes rise on the beat |
+| `entities/flag.js` | waving flag (vertex animation) |
+| `entities/rainPalm.js` | rain + rippling puddle |
+| `entities/techHouse.js` | Balthasar + Opa tinkering; finished robot after 60s |
+| `entities/pool.js` | water, diving board, jumper (button + click) |
+| `entities/gnome.js` | Oberwichtel sunburn loop |
+| `entities/magicHouse.js` | button-controlled swinging door |
+| `audio/music.js` | melody + sung voice; `onBeat()` for visuals |
+| `fx/floatingNotes.js` | rising ♪ used by piano + unicorn |
+| `ui/labels.js`, `ui/controls.js` | name/sign labels + the button bar |
 
-Take them one at a time — each becomes a clean, self-contained module, and the
-world gets easier to extend as you go.
+### Performance changes made during the port
+
+The prototype used ~30 point lights. This version uses **3** (sky, sun, moon)
+and makes everything else glow with **emissive materials**, and it draws the
+whole forest with **instancing**. That is the headroom you build the next 10x
+of features into.
+
+### Good next steps
+
+Bloom/glow (postprocessing), textures, real `.glb` character models, and a
+timed day/night cycle. Each is a clean single-task request for Claude Code.
 
 Have fun building. 🛠️
