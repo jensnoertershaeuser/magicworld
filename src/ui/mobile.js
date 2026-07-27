@@ -74,22 +74,20 @@ function injectStyle() {
       font-size: 13px; padding: 10px 8px; width: 100%;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    /* While the menu is open you're not steering — get the pads out of the way. */
-    html.mobile.menu-open #tpad-dock { opacity: 0; pointer-events: none; }
+    /* While the menu is open you're not steering — get the pad out of the way. */
+    html.mobile.menu-open #tpad { opacity: 0; pointer-events: none; }
 
-    /* --- touch movement pads ---
-       Everything that gets PRESSED lives bottom-left in one dock, so the left
-       thumb drives and the right hand is free to drag the view around. */
-    #tpad-dock {
+    /* --- touch movement pad ---
+       One packed 3x2 block bottom-left, so the left thumb reaches every button
+       without moving and the right hand is free to drag the view around. */
+    #tpad {
       position: fixed; z-index: 11;
       left: calc(14px + env(safe-area-inset-left));
       bottom: calc(14px + env(safe-area-inset-bottom));
-      display: flex; align-items: flex-end; gap: 15px;
+      display: grid; gap: 7px;
+      grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(2, 54px);
       transition: opacity .18s;
     }
-    .tpad { display: grid; gap: 7px; }
-    #tpad-move { grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(2, 54px); }
-    #tpad-vert { grid-template-columns: 54px; grid-template-rows: repeat(2, 54px); }
     .tbtn {
       width: 54px; height: 54px; border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
@@ -131,37 +129,34 @@ function buildRotateGate() {
 
 // --- 2. movement buttons --------------------------------------------------
 function buildTouchPads(camControls) {
-  const dock = document.createElement('div');
-  dock.id = 'tpad-dock';
-  const move = document.createElement('div');
-  move.className = 'tpad'; move.id = 'tpad-move';
-  const vert = document.createElement('div');
-  vert.className = 'tpad'; vert.id = 'tpad-vert';
-  dock.append(move, vert);
-  document.body.appendChild(dock);
+  const pad = document.createElement('div');
+  pad.id = 'tpad';
+  document.body.appendChild(pad);
 
-  const btn = (label, key, col, row, parent, alt = false) => {
+  const btn = (label, key, col, row, alt = false) => {
     const b = document.createElement('div');
     b.className = alt ? 'tbtn alt' : 'tbtn';
     b.textContent = label;
     b.style.gridColumn = col;
     b.style.gridRow = row;
     hold(b, key, camControls);
-    parent.appendChild(b);
+    pad.appendChild(b);
     return b;
   };
 
-  // Arrows, not W A S D — nobody has a keyboard in front of them here. The
-  // cells left and right of ↑ stay empty so it sits centred over ↓, the shape
-  // every game pad uses.
-  btn('↑', 'w', 2, 1, move);
-  btn('←', 'a', 1, 2, move);
-  btn('↓', 's', 2, 2, move);
-  btn('→', 'd', 3, 2, move);
-
-  // Fly up/down, stacked right beside ↑, so one thumb reaches every button.
-  btn('⬆', 'e', 1, 1, vert, true);
-  btn('⬇', 'q', 1, 2, vert, true);
+  // Arrows, not W A S D — nobody has a keyboard in front of them here.
+  //
+  //   [⬆] [↑] [⬇]     top row:    fly up · forward · fly down
+  //   [←] [↓] [→]     bottom row: left · back · right
+  //
+  // Flying sits either side of forward so the whole thing is one solid block
+  // under one thumb, with nothing to reach for.
+  btn('⬆', 'e', 1, 1, true);
+  btn('↑', 'w', 2, 1);
+  btn('⬇', 'q', 3, 1, true);
+  btn('←', 'a', 1, 2);
+  btn('↓', 's', 2, 2);
+  btn('→', 'd', 3, 2);
 
   // A finger still down when the app is backgrounded would otherwise leave the
   // camera drifting forever.

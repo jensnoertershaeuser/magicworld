@@ -24,6 +24,13 @@ function startAudio() {
   if (ctx) return;
   const AC = window.AudioContext || window.webkitAudioContext;
   ctx = new AC();
+
+  // Coming back to the tab (or unlocking the phone) leaves the context
+  // suspended on mobile; without this the world is silent from then on.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.sound && ctx.state === 'suspended') ctx.resume();
+  });
+
   master = ctx.createGain(); master.gain.value = 0.5;
   filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 2600;
   const delay = ctx.createDelay(); delay.delayTime.value = 0.30;
@@ -68,6 +75,9 @@ function singNote(freq, time, d) {
 
 function scheduler() {
   if (!playing) return;
+  // If the context was paused (tab backgrounded, phone locked) its clock has
+  // run on without us. Re-anchor instead of dumping the whole backlog at once.
+  if (nextT < ctx.currentTime - 0.5) nextT = ctx.currentTime + 0.1;
   while (nextT < ctx.currentTime + 0.12) {
     const m = melody[idx];
     if (m[0] > 0) {
@@ -84,9 +94,21 @@ function scheduler() {
 
 export function startMusic() {
   startAudio();
-  if (ctx.state === 'suspended') ctx.resume();
-  playing = true; started = true; nextT = ctx.currentTime + 0.15;
-  scheduler();
+  unlock();          // no-op once the phone has let us through
+  playing = true; started = true;
+
+  // The melody is scheduled against ctx.currentTime, and a suspended context's
+  // clock does not advance. Anchoring before the resume finishes would queue
+  // every note in the past, where they are silently dropped — which is exactly
+  // how "no sound at all on the phone" happens. So wait for it to be running.
+  const begin = () => {
+    if (!playing) return;
+    if (timer) { clearTimeout(timer); timer = null; }
+    nextT = ctx.currentTime + 0.15;
+    scheduler();
+  };
+  if (ctx.state === 'running') begin();
+  else ctx.resume().then(begin).catch(() => { /* still locked; a later gesture retries */ });
 }
 export function stopMusic() {
   playing = false;
@@ -100,13 +122,34 @@ export function toggleMusic() { playing ? stopMusic() : startMusic(); return pla
 export function getAudioContext() { startAudio(); return ctx; }
 export function getSfxBus() { startAudio(); return master; }
 
-// Browsers block audio until the user interacts; start on first gesture.
+// iOS in particular will not let a context out of 'suspended' unless the
+// resume happens inside a real user gesture, and it ignores a resume that
+// arrives from a gesture it considers already spent. Playing one empty buffer
+// is the long-standing way to convince it the page is allowed to make noise.
+function unlock() {
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const src = ctx.createBufferSource();
+  src.buffer = ctx.createBuffer(1, 1, 22050);
+  src.connect(ctx.destination);
+  src.start(0);
+}
+
+// Browsers block audio until the user interacts, so start on the first gesture
+// — but KEEP LISTENING until the context is genuinely running. The first tap on
+// a phone often lands on the rotate gate or a movement button and does not get
+// us all the way there; with a one-shot listener the world stays mute forever.
 export function autoStartOnGesture() {
-  const f = () => {
-    if (!started && state.sound) startMusic();
+  const off = () => {
     window.removeEventListener('pointerdown', f);
     window.removeEventListener('keydown', f);
     window.removeEventListener('touchstart', f);
+  };
+  const f = () => {
+    startAudio();
+    unlock();
+    if (state.sound) startMusic();   // safe to repeat: it re-anchors the melody
+    if (ctx && ctx.state === 'running') off();
   };
   window.addEventListener('pointerdown', f);
   window.addEventListener('keydown', f);
