@@ -7,7 +7,7 @@ import { setLabelsVisible } from './labels.js';
 // The bar is hidden by default on every device — the world should be the
 // screen, not the UI. ☰ toggles the `menu-open` class on <html>, which is what
 // both the desktop styles below and the phone styles in ui/mobile.js key off.
-export function initControls({ onSound, onJump, onDoor }) {
+export function initControls({ onSound, onJump, onDoor, onBuild }) {
   const style = document.createElement('style');
   style.textContent = `
     #menu-toggle {
@@ -54,12 +54,16 @@ export function initControls({ onSound, onJump, onDoor }) {
   };
   const toggleClass = (b, v) => b.classList.toggle('on', v);
   const soundLabel = () => (state.sound ? '🔊 Ton an' : '🔇 Ton aus');
+  // Two projects, so the button shows what the Technik-Haus is building right
+  // now and one press swaps to the other one.
+  const buildLabel = () => (state.build === 'sup' ? '🏄 Bauen: SUP' : '🤖 Bauen: Roboter');
 
   mk('🌙 Tag/Nacht', (b) => { state.night = !state.night; toggleClass(b, state.night); });
   mk('🏷️ Schilder', (b) => { state.labels = !state.labels; setLabelsVisible(state.labels); toggleClass(b, state.labels); }, state.labels);
   mk(soundLabel(), (b) => { const on = onSound(); b.textContent = soundLabel(); toggleClass(b, on); }, state.sound);
   mk('🤸 Reinspringen', () => onJump());
   mk('🚪 Tür', (b) => { const open = onDoor(); toggleClass(b, open); });
+  mk(buildLabel(), (b) => { onBuild(); b.textContent = buildLabel(); toggleClass(b, state.build === 'sup'); });
 }
 
 function buildMenuToggle() {

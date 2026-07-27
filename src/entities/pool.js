@@ -7,12 +7,18 @@ import { reserve } from '../world/occupancy.js';
 
 const V = new THREE.Vector3();
 
+// Where the water is. Exported as plain numbers so other modules can aim for
+// the pool without waiting for addPool() — techHouse.js is built before the
+// pool in main.js and still needs to know where to launch a finished SUP.
+export const POOL = { x: -24, z: -12, W: 8, D: 6, wallH: 1.4 };
+export const POOL_WATER_Y = heightAt(POOL.x, POOL.z) + POOL.wallH - 0.35;
+
 export function addPool(scene, camera, dom) {
-  const px = -24, pz = -12, baseY = heightAt(px, pz);
+  const px = POOL.x, pz = POOL.z, baseY = heightAt(px, pz);
   reserve(px, pz, 8);            // 8x6 basin + diving board + ladder
   const g = new THREE.Group(); g.position.set(px, baseY, pz); scene.add(g);
 
-  const W = 8, Dp = 6, wallH = 1.4, th = 0.3;
+  const W = POOL.W, Dp = POOL.D, wallH = POOL.wallH, th = 0.3;
   const wallMat = new THREE.MeshStandardMaterial({ color: 0xeef3f7, roughness: 0.7 });
   const innerMat = new THREE.MeshStandardMaterial({ color: 0x7fc7ff, roughness: 0.4 });
   const copeMat = new THREE.MeshStandardMaterial({ color: 0xbfe0ff, roughness: 0.6 });
@@ -26,7 +32,7 @@ export function addPool(scene, camera, dom) {
   const water = new THREE.Mesh(waterGeo, new THREE.MeshStandardMaterial({ color: 0x2fa8e0, transparent: true, opacity: 0.82, roughness: 0.12, metalness: 0.35 }));
   water.position.y = wallH - 0.35; g.add(water);
   const waterBase = new Float32Array(waterGeo.attributes.position.array);
-  const waterY = baseY + wallH - 0.35;
+  const waterY = POOL_WATER_Y;
 
   const board = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 2.6), new THREE.MeshStandardMaterial({ color: 0xffe066, roughness: 0.6 })); board.position.set(0, wallH + 0.7, Dp / 2 - 0.3); board.castShadow = true; g.add(board);
   [-0.35, 0.35].forEach((o) => { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, wallH + 0.7, 8), new THREE.MeshStandardMaterial({ color: 0xcfd3da, metalness: 0.6, roughness: 0.4 })); post.position.set(o, (wallH + 0.7) / 2, Dp / 2 + 0.6); g.add(post); });
