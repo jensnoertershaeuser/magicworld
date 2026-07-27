@@ -27,6 +27,57 @@ export function makeRobot(scene) {
   return { g, legL, legR, armL, armR };
 }
 
+// A stand-up-paddle board, built the same way and for the same reason as the
+// robot above: the Technik-Haus can finish either one, so both rigs live here.
+//
+// Local space: the board lies flat around y = 0 (its own waterline) with the
+// nose pointing at +Z, so a caller can drop it straight onto the pool surface
+// and steer it with rotation.y alone.
+// Returns { g, paddle, leds } — paddle is a pivot to rock for the stroke.
+export function makeSup(scene) {
+  const g = new THREE.Group();
+  const deckMat = new THREE.MeshStandardMaterial({ color: 0xffe066, roughness: 0.5, metalness: 0.15 });
+  const padMat = new THREE.MeshStandardMaterial({ color: 0x3a3550, roughness: 0.9 });
+  const railMat = new THREE.MeshStandardMaterial({ color: 0x6ee7ff, roughness: 0.35, metalness: 0.4 });
+  const shaftMat = new THREE.MeshStandardMaterial({ color: 0xcfd3da, metalness: 0.6, roughness: 0.4 });
+
+  // Hull: a capsule squashed flat is a board with a rounded nose and tail.
+  const hull = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.6, 6, 14), deckMat);
+  hull.rotation.x = Math.PI / 2;
+  // The squash has to happen one level up: inside the rotated hull, "flat"
+  // would point along the board's length instead of through its deck.
+  const board = new THREE.Group(); board.add(hull); board.scale.y = 0.32; g.add(board);
+  const pad = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.06, 1.3), padMat); pad.position.y = 0.14; g.add(pad);
+  // A short glow strip between the deck pad and the thruster, rather than one
+  // long stripe: down the middle it just cuts the pad in half.
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.05, 0.12), railMat); stripe.position.set(0, 0.14, -0.82); g.add(stripe);
+  const fin = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.34, 0.3), railMat); fin.position.set(0, -0.2, -0.9); g.add(fin);
+
+  // It is a Technik-Haus board, so it drives itself: a glowing thruster in the
+  // tail is why it can paddle circles with nobody standing on it.
+  const thruster = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.26, 12), new THREE.MeshStandardMaterial({ color: 0xb06bff, emissive: 0xb06bff, emissiveIntensity: 1.3, roughness: 0.3 }));
+  thruster.rotation.x = Math.PI / 2; thruster.position.set(0, 0.02, -1.06); g.add(thruster);
+
+  // Paddle, parked upright in a deck holder. The pivot sits on the deck and the
+  // shaft hangs off it, so rocking `paddle` swings blade and shaft together.
+  const paddle = new THREE.Group(); paddle.position.set(0.22, 0.16, 0.15); g.add(paddle);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.15, 8), shaftMat);
+  shaft.geometry.translate(0, 0.575, 0); paddle.add(shaft);
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.05), deckMat); blade.position.y = 0.02; paddle.add(blade);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 0.08), padMat); grip.position.y = 1.15; paddle.add(grip);
+  paddle.rotation.x = -0.25;
+
+  const leds = [];
+  [-1, 1].forEach((s) => {
+    const led = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshStandardMaterial({ color: 0x5ff0d0, emissive: 0x5ff0d0, emissiveIntensity: 1.1, roughness: 0.3 }));
+    led.position.set(s * 0.3, 0.16, 0.95); g.add(led); leds.push(led);
+  });
+
+  g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  scene.add(g);
+  return { g, paddle, leds };
+}
+
 function ring(cx, cz, r, n, phase) {
   const pts = [];
   for (let i = 0; i < n; i++) {

@@ -230,7 +230,7 @@ the others. Current modules:
 | File | What it is |
 |---|---|
 | `engine/*` | renderer, scene, camera, lights, loop |
-| `state.js` | shared flags (paused, night, labels, follow, autoSpin) |
+| `state.js` | shared flags (paused, night, labels, follow, autoSpin, build) |
 | `world/sky.js`, `world/dayNight.js` | sky gradient + stars + smooth day/night |
 | `world/ground.js` | hilly terrain + shared `heightAt()` |
 | `world/instancedForest.js` | 400 trees in 2 draw calls |
@@ -239,12 +239,12 @@ the others. Current modules:
 | `world/skyDecor.js` | sun, moon (+ moonlight), aurora, hot-air balloons |
 | `entities/character.js` | base figure: build / walk / seat |
 | `entities/family.js` | Papa, Mama, Oma walking |
-| `entities/machines.js` | reactor, gears, patrol robot, turbine, island, drones |
+| `entities/machines.js` | reactor, gears, patrol robot, turbine, island, drones + the robot and SUP rigs the Technik-Haus builds |
 | `entities/rainbowUnicorn.js` | rainbow + galloping unicorn that sings along |
 | `entities/piano.js` | grand piano, notes rise on the beat |
 | `entities/flag.js` | waving flag (vertex animation) |
 | `entities/rainPalm.js` | rain + rippling puddle |
-| `entities/techHouse.js` | Balthasar + Opa tinkering; finished robot after 60s |
+| `entities/techHouse.js` | Balthasar + Opa Klaus tinkering; the menu picks the project, finished after 60s |
 | `entities/pool.js` | water, diving board, jumper (button + click) |
 | `entities/gnome.js` | Oberwichtel sunburn loop |
 | `entities/magicHouse.js` | button-controlled swinging door |
@@ -259,6 +259,16 @@ the others. Current modules:
 The button bar is hidden on every device and opens with the ☰ button. Both the
 button and the `menu-open` class it toggles live in `ui/controls.js`; the phone
 layer only restyles the bar into a two-column sheet.
+
+### The Technik-Haus project
+
+Balthasar and Opa Klaus sit at the workbench, and **"🤖 Bauen"** in the menu
+picks what they are building — a robot (the default) or a stand-up-paddle board.
+The bench always shows a mock-up of the current pick. After 60 seconds the build
+is finished and leaves the workshop: the robot walks off across the meadow, the
+SUP glides over to the pool and paddles in circles. Pressing the button again
+scraps whatever is out there and starts the other project, this time in 15
+seconds, so nobody has to wait a full minute to see the switch.
 
 ### Phone mode
 

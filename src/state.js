@@ -7,4 +7,5 @@ export const state = {
   follow: false,
   autoSpin: true,
   sound: true,    // master switch: the melody AND the sound effects
+  build: 'robot', // what Balthasar and Opa build in the Technik-Haus: 'robot' | 'sup'
 };

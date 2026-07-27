@@ -53,7 +53,7 @@ addRainbowUnicorn(scene);
 addPiano(scene);
 addFlag(scene);
 addRainPalm(scene);
-const balthasar = addTechHouse(scene);   // camera can follow him
+const techHouse = addTechHouse(scene);   // camera can follow Balthasar
 const pool = addPool(scene, camera, renderer.domElement);
 addGnome(scene);
 const magicHouse = addMagicHouse(scene);
@@ -65,13 +65,14 @@ const magicHouse = addMagicHouse(scene);
 addForest(scene, 400);
 
 // follow target for the camera
-controls.setFollowTarget(balthasar);
+controls.setFollowTarget(techHouse.follow);
 
 // --- UI + audio ---
 initControls({
   onSound: toggleSound,
   onJump: pool.triggerJump,
   onDoor: magicHouse.toggleDoor,
+  onBuild: techHouse.toggleBuild,
 });
 initMobile({ camControls: controls });   // no-op on desktop / tablet
 initSplashTip();
