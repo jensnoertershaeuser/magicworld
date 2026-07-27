@@ -45,7 +45,7 @@ zauberwelt/
 │   ├── engine/             the reusable machinery (rarely changes)
 │   │   ├── renderer.js     nicer colours, shadows, hi-dpi
 │   │   ├── scene.js        the scene + fog
-│   │   ├── camera*.js      camera + drag/scroll/WASD controls
+│   │   ├── camera*.js      free-look camera, WASD, never sinks below ground
 │   │   ├── lights.js       just 2 lights for the whole world (on purpose!)
 │   │   └── loop.js         the animation loop + update registry
 │   ├── world/              the environment

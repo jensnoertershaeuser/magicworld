@@ -7,7 +7,7 @@ import { onUpdate, startLoop } from './engine/loop.js';
 import { state } from './state.js';
 import { addSky } from './world/sky.js';
 import { initDayNight } from './world/dayNight.js';
-import { addGround } from './world/ground.js';
+import { addGround, heightAt } from './world/ground.js';
 import { addForest } from './world/instancedForest.js';
 import { addScenery } from './world/scenery.js';
 import { addMountains } from './world/mountains.js';
@@ -34,7 +34,7 @@ import { initMobile } from './ui/mobile.js';
 const renderer = createRenderer();
 const scene = createScene();
 const camera = createCamera();
-const controls = createControls(camera, renderer.domElement, state);
+const controls = createControls(camera, renderer.domElement, state, heightAt);
 const { hemi, sun } = addLights(scene);
 
 // --- environment ---

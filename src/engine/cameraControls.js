@@ -9,10 +9,17 @@ export function createCamera() {
   return camera;
 }
 
-// A small self-contained orbit camera with WASD panning, ported from the
+// How far above the terrain the camera is allowed to get. Roughly eye height,
+// so standing on the ground still looks like standing rather than lying on it.
+const EYE_CLEARANCE = 1.6;
+
+// A small self-contained free-look camera with WASD panning, ported from the
 // prototype. No external dependency, so it can't break on a Three.js update.
-// `state` (optional) drives autoSpin and follow.
-export function createControls(camera, dom, state = null) {
+// `state`    (optional) drives autoSpin and follow.
+// `groundAt` (optional) is a (x, z) => height function. Pass it and the camera
+//            can never sink below the ground; leave it out and this stays a
+//            generic camera with no idea a world exists.
+export function createControls(camera, dom, state = null, groundAt = null) {
   const orbit = {
     target: new THREE.Vector3(0, 2, 0),
     theta: Math.PI * 0.25,
@@ -32,8 +39,21 @@ export function createControls(camera, dom, state = null) {
     return _arm.set(r * Math.sin(p) * Math.sin(t), r * Math.cos(p), r * Math.sin(p) * Math.cos(t));
   }
 
+  // GROUND CLAMP
+  // The camera sits at target + arm, and the arm's x/z do not depend on the
+  // target's height — so we can work out where the camera will land, ask how
+  // high the ground is under that spot, and lift the whole rig if it would end
+  // up inside the hill. Lifting the TARGET rather than just the camera keeps
+  // target + arm true, which everything else (turning, zoom, WASD) relies on.
   function apply() {
-    camera.position.copy(orbit.target).add(arm());
+    const a = arm();
+    const camX = orbit.target.x + a.x;
+    const camZ = orbit.target.z + a.z;
+    if (groundAt) {
+      const floor = groundAt(camX, camZ) + EYE_CLEARANCE;
+      if (orbit.target.y + a.y < floor) orbit.target.y = floor - a.y;
+    }
+    camera.position.set(camX, orbit.target.y + a.y, camZ);
     camera.lookAt(orbit.target);
   }
   apply();
