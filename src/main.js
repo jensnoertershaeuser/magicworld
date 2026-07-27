@@ -25,8 +25,9 @@ import { addGnome } from './entities/gnome.js';
 import { addMagicHouse } from './entities/magicHouse.js';
 
 import { initNotes } from './fx/floatingNotes.js';
-import { autoStartOnGesture, toggleMusic } from './audio/music.js';
+import { autoStartOnGesture, startMusic, stopMusic } from './audio/music.js';
 import { initControls } from './ui/controls.js';
+import { dismissSplash, initSplashTip } from './ui/splash.js';
 import { initMobile } from './ui/mobile.js';
 
 // --- engine ---
@@ -68,15 +69,25 @@ controls.setFollowTarget(balthasar);
 
 // --- UI + audio ---
 initControls({
-  camControls: controls,
-  onMusic: toggleMusic,
+  onSound: toggleSound,
   onJump: pool.triggerJump,
   onDoor: magicHouse.toggleDoor,
 });
 initMobile({ camControls: controls });   // no-op on desktop / tablet
+initSplashTip();
 autoStartOnGesture();
+
+// One switch for the melody and the sound effects alike; sfx.js reads the flag.
+function toggleSound() {
+  state.sound = !state.sound;
+  if (state.sound) startMusic(); else stopMusic();
+  return state.sound;
+}
 
 // camera update every frame
 onUpdate((dt) => controls.update(dt));
 
 startLoop(renderer, scene, camera);
+
+// The world is built and the first frame is on its way — let the splash go.
+dismissSplash();

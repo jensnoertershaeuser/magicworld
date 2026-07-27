@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 
 // Floating text labels (billboards) used for names and building signs.
-// Every label registers here so the "Schilder" button can show/hide them all.
+// Labels register here so the "Schilder" button can show/hide them all —
+// except ones created with { toggleable: false }, which are speech rather than
+// signage (the Oberwichtel's "Autsch!") and must show whatever the button says.
 const sprites = [];
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -14,7 +16,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export function makeLabel(text, color = '#ffffff') {
+export function makeLabel(text, color = '#ffffff', { toggleable = true } = {}) {
   const c = document.createElement('canvas');
   c.width = 256; c.height = 64;
   const ctx = c.getContext('2d');
@@ -29,7 +31,7 @@ export function makeLabel(text, color = '#ffffff') {
     map: new THREE.CanvasTexture(c), transparent: true, depthTest: false,
   }));
   spr.scale.set(3.2, 0.8, 1);
-  sprites.push(spr);
+  if (toggleable) sprites.push(spr);
   return spr;
 }
 

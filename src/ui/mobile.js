@@ -5,7 +5,9 @@ import { isPhone, isPortrait } from './device.js';
 // Three parts:
 //   1. a full-screen "turn your phone sideways" gate that disappears by itself
 //      as soon as the device is in landscape,
-//   2. the button bar from ui/controls.js is hidden and gets a ☰ toggle,
+//   2. a phone-shaped layout for the button bar (a 2-column sheet instead of
+//      the desktop strip) — the ☰ toggle itself lives in ui/controls.js now,
+//      because the menu hides by default on every device,
 //   3. translucent on-screen movement buttons (W A S D + up/down) that press
 //      the exact same keys the keyboard does, via camControls.setKey().
 export function initMobile({ camControls }) {
@@ -14,9 +16,7 @@ export function initMobile({ camControls }) {
   document.documentElement.classList.add('mobile');
   injectStyle();
   buildRotateGate();
-  buildMenuToggle();
   buildTouchPads(camControls);
-  retuneHint();
 }
 
 function injectStyle() {
@@ -56,22 +56,8 @@ function injectStyle() {
       border-radius: 999px; padding: 9px 16px;
     }
 
-    /* --- menu: hidden by default, ☰ toggles it --- */
-    #menu-toggle {
-      position: fixed; z-index: 12;
-      top: calc(10px + env(safe-area-inset-top));
-      left: calc(10px + env(safe-area-inset-left));
-      width: 44px; height: 44px; border-radius: 14px;
-      font: 700 20px 'Trebuchet MS', sans-serif; color: rgba(255,255,255,.92);
-      background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.32);
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      touch-action: manipulation; -webkit-user-select: none; user-select: none;
-    }
-    #menu-toggle.on { background: rgba(255,255,255,.34); }
-
-    /* A 2-column sheet instead of the desktop bar: all nine buttons fit on a
-       landscape phone without scrolling. */
+    /* A 2-column sheet instead of the desktop strip, anchored under the ☰
+       button, so the buttons stay reachable on a landscape phone. */
     html.mobile #bar {
       left: calc(10px + env(safe-area-inset-left)); bottom: auto;
       top: calc(62px + env(safe-area-inset-top));
@@ -115,10 +101,6 @@ function injectStyle() {
       transition: background .1s, transform .1s;
     }
     .tbtn.press { background: rgba(255,255,255,.42); transform: scale(.93); }
-
-    html.mobile #hint { top: calc(10px + env(safe-area-inset-top)); }
-    html.mobile #hint h1 { font-size: 17px; }
-    html.mobile #hint p { font-size: 11px; }
   `;
   document.head.appendChild(style);
 }
@@ -144,22 +126,7 @@ function buildRotateGate() {
   window.addEventListener('orientationchange', () => setTimeout(sync, 150));
 }
 
-// --- 2. ☰ menu toggle -----------------------------------------------------
-function buildMenuToggle() {
-  const btn = document.createElement('button');
-  btn.id = 'menu-toggle';
-  btn.type = 'button';
-  btn.textContent = '☰';
-  btn.setAttribute('aria-label', 'Menü');
-  btn.addEventListener('click', () => {
-    const open = document.documentElement.classList.toggle('menu-open');
-    btn.classList.toggle('on', open);
-    btn.textContent = open ? '✕' : '☰';
-  });
-  document.body.appendChild(btn);
-}
-
-// --- 3. movement buttons --------------------------------------------------
+// --- 2. movement buttons --------------------------------------------------
 function buildTouchPads(camControls) {
   const move = document.createElement('div');
   move.className = 'tpad'; move.id = 'tpad-move';
@@ -217,9 +184,4 @@ function hold(el, key, camControls) {
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', up);
   el.addEventListener('lostpointercapture', up);
-}
-
-function retuneHint() {
-  const p = document.querySelector('#hint p');
-  if (p) p.textContent = 'Ziehen = drehen · 2 Finger = zoomen · Tasten = bewegen';
 }

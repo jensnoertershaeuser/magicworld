@@ -4,6 +4,7 @@ import { makeLabel } from '../ui/labels.js';
 import { onUpdate } from '../engine/loop.js';
 import { state } from '../state.js';
 import { reserve } from '../world/occupancy.js';
+import { playOuch } from '../audio/sfx.js';
 
 const cSkin = new THREE.Color(0xffd8b0), cBurn = new THREE.Color(0xff2e1a);
 
@@ -50,8 +51,11 @@ export function addGnome(scene) {
   bottle.position.set(1.05, 0, -0.5); spot.add(bottle);
 
   const name = makeLabel('Oberwichtel', '#ffcf3a'); name.scale.set(4.6, 1, 1); name.position.set(0, 2.3, 0); gnome.add(name);
-  const ouch = makeLabel('Autsch!', '#ff5030'); ouch.position.set(0, 2.5, 0.4); ouch.visible = false; gnome.add(ouch);
+  // His yelp is not signage, so the "Schilder" button must not silence it.
+  const ouch = makeLabel('Autsch!', '#ff5030', { toggleable: false });
+  ouch.position.set(0, 2.5, 0.4); ouch.visible = false; gnome.add(ouch);
 
+  let wasBurning = false;
   let t = 0;
   onUpdate((dt, time) => {
     if (state.paused) return;
@@ -61,7 +65,10 @@ export function addGnome(scene) {
     else if (t < D1 + D2) { red = 1.0; burning = true; wobble = Math.sin(time * 22) * 0.09; bounce = Math.abs(Math.sin(time * 9)) * 0.12; }
     else red = 0.9 * (1 - (t - D1 - D2) / D3);
     skin.forEach((m) => m.color.copy(cSkin).lerp(cBurn, red));
-    ouch.visible = burning && state.labels;
+    ouch.visible = burning;
+    // Squeak once as the burn starts, not on every frame of it.
+    if (burning && !wasBurning) playOuch();
+    wasBurning = burning;
     gnome.rotation.z = wobble;
     gnome.position.y = 0.56 + bounce;
   });

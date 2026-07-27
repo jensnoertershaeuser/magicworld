@@ -9,25 +9,111 @@
     html, body { width: 100%; height: 100%; overflow: hidden; background: #6fb4f0; font-family: 'Trebuchet MS', sans-serif; }
     #app { position: fixed; inset: 0; }
     #app canvas { display: block; }
-    #hint {
-      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
-      color: #fff; text-align: center; pointer-events: none;
-      text-shadow: 0 2px 8px rgba(0,0,0,.6); z-index: 5;
+
+    /* --- launch splash -------------------------------------------------
+       Lives in the HTML rather than in JS so it paints instantly, before
+       Three.js has even downloaded. ui/splash.js fades it out once the world
+       is built and a minimum showing time has passed. */
+    #splash {
+      position: fixed; inset: 0; z-index: 300;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 24px; text-align: center;
+      background: radial-gradient(circle at 50% 42%, #24407e 0%, #131c42 55%, #0b1027 100%);
+      transition: opacity .55s ease, transform .55s ease;
     }
-    #hint h1 {
-      font-size: clamp(18px, 4vw, 28px); letter-spacing: 1px;
-      background: linear-gradient(90deg, #ffe066, #5ff0d0, #b06bff);
+    #splash.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+    #splash .mark { width: min(38vh, 200px); height: min(38vh, 200px); overflow: visible; }
+    #splash .r1 { animation: spin 11s linear infinite; transform-origin: 110px 110px; }
+    #splash .r2 { animation: spin2 8s linear infinite reverse; transform-origin: 110px 110px; }
+    #splash .crystal { animation: pulse 3.2s ease-in-out infinite; transform-origin: 110px 110px; }
+    #splash .sparkles path { animation: twinkle 2.4s ease-in-out infinite; }
+    #splash .sparkles path:nth-child(2) { animation-delay: .7s; }
+    #splash .sparkles path:nth-child(3) { animation-delay: 1.4s; }
+
+    @keyframes spin  { from { transform: rotate(0deg); }  to { transform: rotate(360deg); } }
+    @keyframes spin2 { from { transform: rotate(62deg); } to { transform: rotate(422deg); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+    @keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+    #splash .word { display: flex; flex-direction: column; align-items: center; }
+    #splash .pre {
+      font-size: clamp(11px, 2.2vw, 15px); letter-spacing: .42em; text-indent: .42em;
+      color: #9fd8ff; opacity: .9; text-transform: uppercase;
+    }
+    #splash .big {
+      font-size: clamp(30px, 7.2vw, 60px); font-weight: 700; line-height: 1.05;
+      letter-spacing: .07em; text-indent: .07em;
+      background: linear-gradient(95deg, #ffe066 8%, #5ff0d0 48%, #b06bff 92%);
       -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 3px 18px rgba(120,180,255,.35));
     }
-    #hint p { font-size: 12px; opacity: .8; margin-top: 2px; color: #dfe; }
+    #splash .tip {
+      margin-top: 18px; font-size: clamp(11px, 2vw, 13px);
+      color: #cfe3ff; opacity: .62; letter-spacing: .02em;
+    }
+
+    /* The lockup drifts up as it appears, like a game booting. */
+    #splash .rise { animation: rise .85s cubic-bezier(.16,.84,.3,1) both; }
+    #splash .tip.rise { animation-delay: .35s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      #splash .r1, #splash .r2, #splash .crystal, #splash .sparkles path, #splash .rise { animation: none; }
+    }
   </style>
 </head>
 <body>
   <div id="app"></div>
-  <div id="hint">
-    <h1>✨ Balthasars Zauberwelt ✨</h1>
-    <p>Ziehen = drehen · Scrollen = zoomen · W A S D = bewegen</p>
+
+  <div id="splash">
+    <svg class="mark rise" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ffe066" />
+          <stop offset="50%" stop-color="#5ff0d0" />
+          <stop offset="100%" stop-color="#b06bff" />
+        </linearGradient>
+        <radialGradient id="rg">
+          <stop offset="0%" stop-color="#8fe8ff" stop-opacity=".5" />
+          <stop offset="65%" stop-color="#6a5cff" stop-opacity=".12" />
+          <stop offset="100%" stop-color="#6a5cff" stop-opacity="0" />
+        </radialGradient>
+        <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="4" />
+        </filter>
+      </defs>
+
+      <circle cx="110" cy="110" r="104" fill="url(#rg)" />
+
+      <!-- two orbit rings, echoing the reactor at the centre of the world -->
+      <g class="r1"><ellipse cx="110" cy="110" rx="82" ry="31" fill="none" stroke="url(#lg)" stroke-width="2.6" opacity=".8" /></g>
+      <g class="r2"><ellipse cx="110" cy="110" rx="82" ry="31" fill="none" stroke="url(#lg)" stroke-width="2.6" opacity=".5" /></g>
+
+      <!-- the crystal -->
+      <g class="crystal">
+        <path d="M110 42 L148 110 L110 178 L72 110 Z" fill="url(#lg)" filter="url(#soft)" opacity=".8" />
+        <path d="M110 42 L148 110 L110 178 L72 110 Z" fill="url(#lg)" opacity=".92" />
+        <path d="M110 42 L148 110 L110 178 L72 110 Z" fill="none" stroke="#ffffff" stroke-opacity=".85" stroke-width="2" stroke-linejoin="round" />
+        <path d="M110 42 V178 M72 110 H148" stroke="#ffffff" stroke-opacity=".4" stroke-width="1.3" />
+        <path d="M110 42 L72 110 L110 110 Z" fill="#ffffff" fill-opacity=".22" />
+      </g>
+
+      <g class="sparkles" fill="#ffffff">
+        <path d="M0-8 L1.8-1.8 L8 0 L1.8 1.8 L0 8 L-1.8 1.8 L-8 0 L-1.8-1.8 Z" transform="translate(186 54)" />
+        <path d="M0-6 L1.4-1.4 L6 0 L1.4 1.4 L0 6 L-1.4 1.4 L-6 0 L-1.4-1.4 Z" transform="translate(30 82)" />
+        <path d="M0-5 L1.1-1.1 L5 0 L1.1 1.1 L0 5 L-1.1 1.1 L-5 0 L-1.1-1.1 Z" transform="translate(166 172)" />
+      </g>
+    </svg>
+
+    <div class="word rise">
+      <span class="pre">Balthasars</span>
+      <span class="big">Zauberwelt</span>
+    </div>
+
+    <p class="tip rise" id="splash-tip"></p>
   </div>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

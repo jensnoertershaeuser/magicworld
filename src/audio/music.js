@@ -2,6 +2,8 @@
 // vowel voice layered on top (the unicorn "singing along"). Other modules
 // subscribe with onBeat(cb) to spawn visuals in time with the notes.
 
+import { state } from '../state.js';
+
 let ctx, master, filter;
 let playing = false, started = false, idx = 0, nextT = 0, timer = null;
 const beat = 0.52;
@@ -92,10 +94,16 @@ export function stopMusic() {
 }
 export function toggleMusic() { playing ? stopMusic() : startMusic(); return playing; }
 
+// Sound effects (see audio/sfx.js) share this AudioContext instead of opening
+// a second one. They connect to `master`, bypassing the melody's echo/lowpass
+// so a squeak stays crisp.
+export function getAudioContext() { startAudio(); return ctx; }
+export function getSfxBus() { startAudio(); return master; }
+
 // Browsers block audio until the user interacts; start on first gesture.
 export function autoStartOnGesture() {
   const f = () => {
-    if (!started) startMusic();
+    if (!started && state.sound) startMusic();
     window.removeEventListener('pointerdown', f);
     window.removeEventListener('keydown', f);
     window.removeEventListener('touchstart', f);

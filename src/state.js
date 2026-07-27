@@ -6,4 +6,5 @@ export const state = {
   labels: true,
   follow: false,
   autoSpin: true,
+  sound: true,    // master switch: the melody AND the sound effects
 };
