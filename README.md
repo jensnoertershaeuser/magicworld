@@ -58,7 +58,8 @@ zauberwelt/
 │   └── ui/                 everything on top of the canvas
 │       ├── controls.js     the button bar
 │       ├── device.js       "is this a phone?" (?mobile=1 forces it on)
-│       └── mobile.js       phone layout: rotate gate, ☰ menu, touch pads
+│       ├── splash.js       fades out the launch logo
+│       └── mobile.js       phone layout: rotate gate + arrow touch pads
 └── legacy/zauberwelt.html  the old all-in-one prototype (for porting features)
 ```
 
@@ -249,16 +250,24 @@ the others. Current modules:
 | `entities/magicHouse.js` | button-controlled swinging door |
 | `audio/music.js` | melody + sung voice; `onBeat()` for visuals |
 | `fx/floatingNotes.js` | rising ♪ used by piano + unicorn |
-| `ui/labels.js`, `ui/controls.js` | name/sign labels + the button bar |
-| `ui/mobile.js` | phone-only: "turn your phone" gate, ☰ menu, W A S D touch pads |
+| `ui/labels.js`, `ui/controls.js` | name/sign labels + the ☰ menu and button bar |
+| `ui/splash.js` | when the launch logo (in `index.html`) fades away |
+| `ui/mobile.js` | phone-only: "turn your phone" gate + arrow touch pads |
+
+### The menu
+
+The button bar is hidden on every device and opens with the ☰ button. Both the
+button and the `menu-open` class it toggles live in `ui/controls.js`; the phone
+layer only restyles the bar into a two-column sheet.
 
 ### Phone mode
 
 On phones (coarse pointer + short side under 600px) the world asks for
-landscape first, hides the button bar behind a ☰ toggle, and overlays
-translucent W A S D + up/down buttons that press the same keys the keyboard
-does. Everything else — desktop and tablet — is untouched. Append `?mobile=1`
-to the URL to preview the phone layout on a desktop browser.
+landscape first, then overlays translucent arrow buttons that press the same
+keys the keyboard does. Movement (← ↑ ↓ →) and flying (⬆ ⬇) sit together in one
+dock at the bottom left, so one thumb works every button while the other hand
+drags the view. Everything else — desktop and tablet — is untouched. Append
+`?mobile=1` to the URL to preview the phone layout on a desktop browser.
 
 ### Performance changes made during the port
 

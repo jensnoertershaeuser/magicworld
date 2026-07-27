@@ -26,6 +26,6 @@ export function initSplashTip() {
   const tip = document.getElementById('splash-tip');
   if (!tip) return;
   tip.textContent = isPhone()
-    ? 'Ziehen = umsehen · 2 Finger = zoomen · Tasten = bewegen'
+    ? 'Ziehen = umsehen · 2 Finger = zoomen · Pfeile = bewegen'
     : 'Ziehen = umsehen · Scrollen = zoomen · W A S D = bewegen';
 }

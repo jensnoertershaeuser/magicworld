@@ -75,31 +75,34 @@ function injectStyle() {
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     /* While the menu is open you're not steering — get the pads out of the way. */
-    html.mobile.menu-open .tpad { opacity: 0; pointer-events: none; }
-    .tpad { transition: opacity .18s; }
+    html.mobile.menu-open #tpad-dock { opacity: 0; pointer-events: none; }
 
-    /* --- touch movement pads --- */
-    .tpad { position: fixed; z-index: 11; display: grid; gap: 7px; }
-    #tpad-move {
+    /* --- touch movement pads ---
+       Everything that gets PRESSED lives bottom-left in one dock, so the left
+       thumb drives and the right hand is free to drag the view around. */
+    #tpad-dock {
+      position: fixed; z-index: 11;
       left: calc(14px + env(safe-area-inset-left));
       bottom: calc(14px + env(safe-area-inset-bottom));
-      grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(2, 54px);
+      display: flex; align-items: flex-end; gap: 15px;
+      transition: opacity .18s;
     }
-    #tpad-vert {
-      right: calc(14px + env(safe-area-inset-right));
-      bottom: calc(14px + env(safe-area-inset-bottom));
-      grid-template-columns: 54px; grid-template-rows: repeat(2, 54px);
-    }
+    .tpad { display: grid; gap: 7px; }
+    #tpad-move { grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(2, 54px); }
+    #tpad-vert { grid-template-columns: 54px; grid-template-rows: repeat(2, 54px); }
     .tbtn {
       width: 54px; height: 54px; border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
-      font: 700 17px 'Trebuchet MS', sans-serif; color: rgba(255,255,255,.9);
+      font: 700 21px 'Trebuchet MS', sans-serif; color: rgba(255,255,255,.9);
       background: rgba(220,220,225,.20); border: 1px solid rgba(255,255,255,.34);
       backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
       touch-action: none; -webkit-user-select: none; user-select: none;
       -webkit-tap-highlight-color: transparent;
       transition: background .1s, transform .1s;
     }
+    /* Flying up/down is a different kind of move than walking, so the altitude
+       pair is tinted and uses solid arrows against the pad's outline ones. */
+    .tbtn.alt { background: rgba(140,190,255,.26); border-color: rgba(190,220,255,.42); font-size: 17px; }
     .tbtn.press { background: rgba(255,255,255,.42); transform: scale(.93); }
   `;
   document.head.appendChild(style);
@@ -128,17 +131,18 @@ function buildRotateGate() {
 
 // --- 2. movement buttons --------------------------------------------------
 function buildTouchPads(camControls) {
+  const dock = document.createElement('div');
+  dock.id = 'tpad-dock';
   const move = document.createElement('div');
   move.className = 'tpad'; move.id = 'tpad-move';
   const vert = document.createElement('div');
   vert.className = 'tpad'; vert.id = 'tpad-vert';
-  document.body.append(move, vert);
+  dock.append(move, vert);
+  document.body.appendChild(dock);
 
-  // [ , W , ] / [ A , S , D ] — empty cells keep W centred above S.
-  const spacer = () => { const d = document.createElement('div'); return d; };
-  const btn = (label, key, col, row, parent) => {
+  const btn = (label, key, col, row, parent, alt = false) => {
     const b = document.createElement('div');
-    b.className = 'tbtn';
+    b.className = alt ? 'tbtn alt' : 'tbtn';
     b.textContent = label;
     b.style.gridColumn = col;
     b.style.gridRow = row;
@@ -147,13 +151,17 @@ function buildTouchPads(camControls) {
     return b;
   };
 
-  move.appendChild(spacer());
-  btn('W', 'w', 2, 1, move);
-  btn('A', 'a', 1, 2, move);
-  btn('S', 's', 2, 2, move);
-  btn('D', 'd', 3, 2, move);
-  btn('⬆', 'e', 1, 1, vert);
-  btn('⬇', 'q', 1, 2, vert);
+  // Arrows, not W A S D — nobody has a keyboard in front of them here. The
+  // cells left and right of ↑ stay empty so it sits centred over ↓, the shape
+  // every game pad uses.
+  btn('↑', 'w', 2, 1, move);
+  btn('←', 'a', 1, 2, move);
+  btn('↓', 's', 2, 2, move);
+  btn('→', 'd', 3, 2, move);
+
+  // Fly up/down, stacked right beside ↑, so one thumb reaches every button.
+  btn('⬆', 'e', 1, 1, vert, true);
+  btn('⬇', 'q', 1, 2, vert, true);
 
   // A finger still down when the app is backgrounded would otherwise leave the
   // camera drifting forever.
