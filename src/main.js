@@ -23,6 +23,7 @@ import { addTechHouse } from './entities/techHouse.js';
 import { addPool } from './entities/pool.js';
 import { addGnome } from './entities/gnome.js';
 import { addMagicHouse } from './entities/magicHouse.js';
+import { addWoodWorkshop } from './entities/woodWorkshop.js';
 
 import { initNotes } from './fx/floatingNotes.js';
 import { autoStartOnGesture, startMusic, stopMusic } from './audio/music.js';
@@ -57,6 +58,9 @@ const techHouse = addTechHouse(scene);   // camera can follow Balthasar
 const pool = addPool(scene, camera, renderer.domElement);
 addGnome(scene);
 const magicHouse = addMagicHouse(scene);
+// Last of the ground-owning modules, so its own ring of trees can dodge
+// everything above it (see the isFree() call in woodWorkshop.js).
+const workshop = addWoodWorkshop(scene);
 
 // --- forest LAST ---
 // Every module above reserves the ground it occupies (world/occupancy.js), and
@@ -73,6 +77,7 @@ initControls({
   onJump: pool.triggerJump,
   onDoor: magicHouse.toggleDoor,
   onBuild: techHouse.toggleBuild,
+  onCarve: workshop.nextCarving,
 });
 initMobile({ camControls: controls });   // no-op on desktop / tablet
 initSplashTip();

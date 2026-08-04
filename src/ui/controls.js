@@ -1,4 +1,5 @@
 import { state } from '../state.js';
+import { onUpdate } from '../engine/loop.js';
 import { setLabelsVisible } from './labels.js';
 
 // Builds the ☰ toggle and the button bar, and wires each button to the shared
@@ -7,7 +8,7 @@ import { setLabelsVisible } from './labels.js';
 // The bar is hidden by default on every device — the world should be the
 // screen, not the UI. ☰ toggles the `menu-open` class on <html>, which is what
 // both the desktop styles below and the phone styles in ui/mobile.js key off.
-export function initControls({ onSound, onJump, onDoor, onBuild }) {
+export function initControls({ onSound, onJump, onDoor, onBuild, onCarve }) {
   const style = document.createElement('style');
   style.textContent = `
     #menu-toggle {
@@ -57,6 +58,7 @@ export function initControls({ onSound, onJump, onDoor, onBuild }) {
   // Two projects, so the button shows what the Technik-Haus is building right
   // now and one press swaps to the other one.
   const buildLabel = () => (state.build === 'sup' ? '🏄 Bauen: SUP' : '🤖 Bauen: Roboter');
+  const carveLabel = () => `🪵 Schnitzen: ${state.carve}`;
 
   mk('🌙 Tag/Nacht', (b) => { state.night = !state.night; toggleClass(b, state.night); });
   mk('🏷️ Schilder', (b) => { state.labels = !state.labels; setLabelsVisible(state.labels); toggleClass(b, state.labels); }, state.labels);
@@ -64,6 +66,16 @@ export function initControls({ onSound, onJump, onDoor, onBuild }) {
   mk('🤸 Reinspringen', () => onJump());
   mk('🚪 Tür', (b) => { const open = onDoor(); toggleClass(b, open); });
   mk(buildLabel(), (b) => { onBuild(); b.textContent = buildLabel(); toggleClass(b, state.build === 'sup'); });
+
+  // The Holzwerkstatt moves on to the next figure by itself once one is
+  // finished, so this button's text follows state.carve every frame instead of
+  // only changing when it is clicked — otherwise it would soon be lying about
+  // what is on the bench.
+  const carveBtn = mk(carveLabel(), () => onCarve());
+  onUpdate(() => {
+    const txt = carveLabel();
+    if (carveBtn.textContent !== txt) carveBtn.textContent = txt;
+  });
 }
 
 function buildMenuToggle() {

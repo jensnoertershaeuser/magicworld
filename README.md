@@ -230,7 +230,7 @@ the others. Current modules:
 | File | What it is |
 |---|---|
 | `engine/*` | renderer, scene, camera, lights, loop |
-| `state.js` | shared flags (paused, night, labels, follow, autoSpin, build) |
+| `state.js` | shared flags (paused, night, labels, follow, autoSpin, build, carve) |
 | `world/sky.js`, `world/dayNight.js` | sky gradient + stars + smooth day/night |
 | `world/ground.js` | hilly terrain + shared `heightAt()` |
 | `world/instancedForest.js` | 400 trees in 2 draw calls |
@@ -245,6 +245,7 @@ the others. Current modules:
 | `entities/flag.js` | waving flag (vertex animation) |
 | `entities/rainPalm.js` | rain + rippling puddle |
 | `entities/techHouse.js` | Balthasar + Opa Klaus tinkering; the menu picks the project, finished after 60s |
+| `entities/woodWorkshop.js` | log workshop in a forest clearing; Holzwichtel Willi carves little figures |
 | `entities/pool.js` | water, diving board, jumper (button + click) |
 | `entities/gnome.js` | Oberwichtel sunburn loop |
 | `entities/magicHouse.js` | button-controlled swinging door |
@@ -269,6 +270,35 @@ is finished and leaves the workshop: the robot walks off across the meadow, the
 SUP glides over to the pool and paddles in circles. Pressing the button again
 scraps whatever is out there and starts the other project, this time in 15
 seconds, so nobody has to wait a full minute to see the switch.
+
+### Die Holzwerkstatt
+
+North-west of the meadow, at `(-16, 38)`, a log workshop stands in its own
+clearing deep in the woods. **Holzwichtel Willi** sits at the low workbench and
+whittles small figures out of firewood: chunks come off the blank in visible
+steps with shavings flying, the figure appears halfway through, and when it is
+finished it chimes, glows, and flies up onto the shelf on the back wall. Six
+figures stay on display — the seventh replaces the oldest.
+
+There are six of them (Bär, Vogel, Fisch, Hase, Eule, Pilz) and Willi works
+through the whole catalogue by himself, one every 17 seconds. **"🪵 Schnitzen"**
+in the menu skips to the next figure straight away, on a 7-second countdown.
+Because the workshop moves on by itself, that button's text follows
+`state.carve` every frame instead of only changing when it is clicked.
+
+Two things in this file are deliberate cheats, both in the spirit of "fake the
+light, keep the picture readable":
+
+- **The front half of the roof casts no shadow.** The sun stands at 42°, so any
+  roof over the bench puts the entire workshop in the dark. The back half still
+  shadows the meadow.
+- **The lantern's pool of light is an additively blended disc**, not a fourth
+  real light (see `engine/lights.js` for why).
+
+The workshop also plants its own ring of dark spruce, denser than the big
+forest, so it really sits *in* the woods. Those trees ask `isFree()` themselves,
+which is why the grove goes in **before** the workshop reserves its clearing —
+and why `main.js` builds the workshop after every other ground-owning module.
 
 ### Phone mode
 
